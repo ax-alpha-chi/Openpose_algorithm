@@ -1,0 +1,2 @@
+--video examples/media/video.avi --write_video output/result.avi --write_json output/
+Сохраняет видео в формат avi и json файлы.
