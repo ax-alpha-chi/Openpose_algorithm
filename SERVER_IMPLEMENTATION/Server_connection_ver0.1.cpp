@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	cout << "Starting Up The Server...\n";
     write_ftp_receive();
     batch_file_receive();
-	while(!is_file_exist("tobeprocessed.mp4"))
+	while(!((is_file_exist("tobeprocessed.mp4")) || (is_file_exist("tobeprocessed.mp4")) || (is_file_exist("tobeprocessed.mp4"))))
     	system("server.bat");
     write_ftp_send();
     batch_file_process();
