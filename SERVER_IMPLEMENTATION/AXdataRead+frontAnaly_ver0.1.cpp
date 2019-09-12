@@ -1,3 +1,20 @@
+/*
+	AX SQUAT ANALYZER
+	FOR FRONT VIEW(RULE:CONSTRAINTS)
+		1.FEET SHOULD STAY STATIONARY: LEFT FOOT POINT AND RIGHT FOOT POINT IS LIMITED TO 5PIXELS IN X AXIS 
+		2.HIPS SHOULD BE HORIZONTAL: LEFT HIP POINT AND RIGHT HIP POINT IS LIMITED TO 5PIXELS IN X AND Y AXES
+		3.KNEES SHOULD STAY STATIONARY: LEFT KNEE POINT AND RIGHT KNEE POINT DIFFERENCE IS LIMITED TO 50PIXELS IN X AND Y AXES
+		4.SHOULDERS SHOULD BE HORIZONTAL: LEFT SHOULDER POINT AND RIGHT SHOULDER POINT DIFFERENCE IS LIMITED TO 5PIXELS IN Y AXIS
+	FOR SIDE VIEW(RULE:CONSTRAINTS)
+		1.KNEES AND FEETFRONT SHOULD BE HORIZONTAL AT SQUAT:
+		2.ANGLE BETWEEN THIGH AND CALF SHOULD BE LESS THAN 90DEGREES:
+		3.SHOULDER AND NECK SHOULD BE ON ONE POINT THROUGHOUT:
+	FOR PLANK(RULE:CONSTRAINTS)
+		1.NECK TO HIP AND HIP TO HEEL SHOULD BE STRAIGHT:
+		2.ELBOW TO SHOULDER AND ELBOW TO HAND SHOULD BE PERPENDICULAR:
+		3.NOSE TO EAR SHOULD BE VERTICLE: 
+*/
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -6,9 +23,12 @@
 #include <conio.h>
 #include <bits/stdc++.h> 
 #include <cmath>
+
+#define PI 3.14159265
+
 using namespace std;
 /*
-Point class which has the x,y,c data required for calculations, functions of this class distribute() distributes the string data to x,y,c accordingly.
+Point class which has the x,y,c data required for calculations, function of this class distribute() distributes the string data to x,y,c accordingly.
 */
 class Point{
 	public:
@@ -40,12 +60,16 @@ Squat class is the main class of the program which reads data and analyzes the d
 class SquatAnalyze{
 	public:
 		int numberOfSquats;
+		int numberOfStands;
+		int numberOfFull;
 		int squatDataNumber[10];								/*datanumber at which the squat is performed first squat at squatDatabNumber[0], second squat at squatDatanumber[1], and so on*/
+		int standDataNumber[10];								/*datanumber at the person is standing straight, same as squatDataNumeber*/
 		string errorsstr;										/*errorstring which will save errors when they are found*/
 		int timeOfVideo = 10;									/*time of the video analyzed in seconds*/
-		double frameRate = 30;									/*framerate of the video for analyzing exact frames*/
+		const double frameRate = 30;							/*framerate of the video for analyzing exact frames*/
 		const static int numberOfData = 40;						/*number of json files to be read*/
-		const static int timeInterval = 0.25;					/*time interval of reading points (every 0.25 seconds video will be analyzed)*/
+		const double timeInterval = 0.25;						/*time interval of reading points (every 0.25 seconds video will be analyzed)*/
+		const int delay = 10;									/*delay for rechecking after counting a squat*/
 		bool error = 0;											/*1 if something is wrong*/
 		int errorCount = 0;										/*for keeping track of number of errors occured*/
 		Point feet_l[numberOfData],feet_r[numberOfData];		/*point11,14*/
@@ -55,12 +79,12 @@ class SquatAnalyze{
 		Point toe_l[numberOfData];								/*point22*/
 		Point neck[numberOfData];								/*point1*/
 		/*
-		This Function reads the data in the output folder and saves them in appropriate variables (feet_l[],feet_r,...etc)
+		This Function reads the data in the output folder and saves them in appropriate variables (feet_l[],feet_r[],...etc)
 		*/
 		void read_data(){
 		    string s;
 		    for(int k = 0; k < numberOfData; k++){
-		    	int frame = 0.25 * k * 30;
+		    	int frame = timeInterval * k * frameRate;
 				stringstream ss;
 				ss << frame;
 				string framestr = ss.str();
@@ -143,10 +167,34 @@ class SquatAnalyze{
 				if( abs( hip_l[i].y - knee_l[i].y) < 25 ){
 					squatDataNumber[count] = i;
 					count++;
-					i = i + 10;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
+					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
 				} 
 			}
 			numberOfSquats = count; 
+		}
+		/*
+		This Function counts the number of time person is standing straight
+		*/
+		void countNumberOfStands(){
+			int count = 0;
+			for(int i = 1; i < numberOfData; i++){
+				if( abs( hip_l[i].y - knee_l[i].y) > 140 ){
+					standDataNumber[count] = i;
+					count++;
+					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
+				} 
+			}
+			numberOfStands = count; 
+		}
+		/*
+		This Function counts the full squats
+		*/
+		void countFullsquats(){
+			if(numberOfStands < numberOfSquats)
+				numberOfFull = numberOfStands;
+			else
+				numberOfFull = numberOfSquats;
+			
 		}
 		/*
 		This Function analyzes the data obtained and finds errors according to the constraints of perfect squat.(front view)
@@ -158,149 +206,123 @@ class SquatAnalyze{
 			/*
 			For analyzing errors at squat and stand positions
 			*/	
-			for(int i = 0; i < numberOfSquats; i++){
+			for(int i = 0; i < numberOfFull; i++){
 
 				dataAtSquat = squatDataNumber[i];
-				if(i != 0)
-					dataAtStand = (squatDataNumber[i] - squatDataNumber[i-1])/2;
-				else
-					dataAtStand = squatDataNumber[i]/2;	
+				dataAtStand = standDataNumber[i];	
 				/*
-				feet width difference between stand and squat should be less than 5 as the constraint else error is saved.
+				feet width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/	
-				if( abs((feet_r[dataAtStand].x - feet_l[dataAtStand].x) - (feet_r[dataAtSquat].x - feet_l[dataAtSquat].x)) > 5 ){
+				if( abs(abs(feet_r[dataAtStand].x - feet_l[dataAtStand].x) - abs(feet_r[dataAtSquat].x - feet_l[dataAtSquat].x)) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "feets are moved too much in squat " + to_string(i + 1) + ", please keep your feet stationary\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "feets are moved too much in squat " + to_string(i + 1) + ", please keep your feet stationary (same position)\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				hip_l height and hip_r height difference at stand should be less than 5 as the constraint else error is saved.
+				hip_l height and hip_r height difference at stand should be less than 5 as the constraint, else error is saved.
 				*/
 				if( abs(hip_l[dataAtStand].y - hip_r[dataAtStand].y) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "hips are not straight at the start of squat(stand position) in squat " + to_string(i + 1) + ", please keep your hips straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "hips are not horizontal at the start of squat(stand position) in squat " + to_string(i + 1) + ", please keep your hips straight\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				hip_l height and hip_r height difference at squat should be less than 5 as the constraint else error is saved.
+				hip_l height and hip_r height difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
 				if( abs(hip_l[dataAtSquat].y - hip_r[dataAtSquat].y) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "hips are not straight at the squat(squat position) in squat " + to_string(i + 1) + ", please keep your hips straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "hips are not horizontal at the squat(squat position) in squat " + to_string(i + 1) + ", please keep your hips straight\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				knee width difference between stand and squat should be less than 5 as the constraint else error is saved.
+				knee width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/
-				if( abs(abs(knee_l[dataAtStand].x - knee_r[dataAtStand].x) - abs(knee_l[dataAtSquat].x - knee_r[dataAtSquat].x)) > 5 ){
+				if( abs(abs(knee_l[dataAtStand].x - knee_r[dataAtStand].x) - abs(knee_l[dataAtSquat].x - knee_r[dataAtSquat].x)) > 60 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "knees move too much in squat " + to_string(i + 1) + ", please keep your knees around the same position\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "knees move too much in squat " + to_string(i + 1) + ", please keep your knees around the same position\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				shoulder_l height and shoulder_r height difference at stand should be less than 10 as the constraint else error is saved.
+				shoulder_l height and shoulder_r height difference at stand should be less than 5 as the constraint, else error is saved.
 				*/
 				if( abs(shoulder_l[dataAtStand].y - shoulder_r[dataAtStand].y) > 10 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "shoulders are not straight at the start of squat(stand position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtStand) + "s\n");
+					temp = "shoulders are not straight at the start of squat(stand position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				shouler_l height and shoulder_r height difference at squat should be less than 5 as the constraint else error is saved.
+				shouler_l height and shoulder_r height difference at squat should be less than 5 as the constraint, else error is saved.
 				*/
 				if( abs(shoulder_l[dataAtSquat].y - shoulder_r[dataAtSquat].y) > 10 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "shoulders are not straight at the squat(squat position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "shoulders are not straight at the squat(squat position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n\n"; 
 					errorsstr.append(temp);
 				}
 			}
 		}
 		/*
-		This Function analyzes the data obtained and finds errors according to the constraints of perfect squat.(front view)
+		This Function analyzes the data obtained and finds errors according to the constraints of perfect squat.(side view)
 		*/
 		void sideError(){
 			string temp;
-			int data;
+			int dataAtSquat;						/*dataAtSquat is the datanumber at which the squat is performed*/
+			int dataAtStand;						/*dataAtStand is the datanumber at which the person is standing straight*/
 			/*
 			For analyzing errors at squat and stand positions
 			*/	
-			for(int i = 0; i < numberOfSquats; i++){
+			for(int i = 0; i < numberOfFull; i++){
 
 				dataAtSquat = squatDataNumber[i];
-				if(i != 0)
-					dataAtStand = (squatDataNumber[i] - squatDataNumber[i-1])/2;
-				else
-					dataAtStand = squatDataNumber[i]/2;	
+				dataAtStand = standDataNumber[i];	
 				/*
-				feet width difference between stand and squat should be less than 5 as the constraint else error is saved.
-				*/	
-				if( abs((feet_r[dataAtStand].x - feet_l[dataAtStand].x) - (feet_r[dataAtSquat].x - feet_l[dataAtSquat].x)) > 5 ){
-					error = 1;
-					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "feets are moved too much in squat " + to_string(i + 1) + ", please keep your feet stationary\n"; 
-					errorsstr.append(temp);
-				}
-				/*
-				hip_l height and hip_r height difference at stand should be less than 5 as the constraint else error is saved.
-				*/
-				if( abs(hip_l[dataAtStand].y - hip_r[dataAtStand].y) > 5 ){
-					error = 1;
-					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "hips are not straight at the start of squat(stand position) in squat " + to_string(i + 1) + ", please keep your hips straight\n"; 
-					errorsstr.append(temp);
-				}
-				/*
-				hip_l height and hip_r height difference at squat should be less than 5 as the constraint else error is saved.
+				knee_l and toe_l x difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(hip_l[dataAtSquat].y - hip_r[dataAtSquat].y) > 5 ){
+				if( abs(knee_l[dataAtSquat].x - toe_l[dataAtSquat].x) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "hips are not straight at the squat(squat position) in squat " + to_string(i + 1) + ", please keep your hips straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "toe and knee are not in line at squat(squat position) in " + to_string(i + 1) + " squat, try pushing your knees forward\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				knee width difference between stand and squat should be less than 5 as the constraint else error is saved.
-				*/
-				if( abs(abs(knee_l[dataAtStand].x - knee_r[dataAtStand].x) - abs(knee_l[dataAtSquat].x - knee_r[dataAtSquat].x)) > 5 ){
+				angle difference of thigh and calf at squat should be less than 90degrees as the constraint, else error is saved.
+				*/ 
+				float thighAngle = atan(abs(hip_l[dataAtSquat].y - knee_l[dataAtSquat].y) / abs(hip_l[dataAtSquat].x - knee_l[dataAtSquat].x)) * 180 / PI;
+				float calfAngle = atan(abs(feet_l[dataAtSquat].y - knee_l[dataAtSquat].y) / abs(feet_l[dataAtSquat].x - knee_l[dataAtSquat].x)) * 180 / PI;
+				if( (thighAngle + calfAngle) > 90){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "knees move too much in squat " + to_string(i + 1) + ", please keep your knees around the same position\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "squat intensity is low at squat(squat position) in  " + to_string(i + 1) + " squat, try to go lower\n\n"; 
 					errorsstr.append(temp);
 				}
 				/*
-				shoulder_l height and shoulder_r height difference at stand should be less than 10 as the constraint else error is saved.
-				*/
-				if( abs(shoulder_l[dataAtStand].y - shoulder_r[dataAtStand].y) > 10 ){
+				shoulder and neck width difference between stand and squat should be less than 5 as the constraint, else error is saved.
+				*/ 
+				if( abs(abs(neck[dataAtStand].x - shoulder_r[dataAtStand].x) - abs(neck[dataAtSquat].x - shoulder_r[dataAtSquat].x)) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "shoulders are not straight at the start of squat(stand position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "shoulders move too much in squat " + to_string(i + 1) + ", please keep your shoulders steady\n\n"; 
 					errorsstr.append(temp);
 				}
-				/*
-				shouler_l height and shoulder_r height difference at squat should be less than 5 as the constraint else error is saved.
-				*/
-				if( abs(shoulder_l[dataAtSquat].y - shoulder_r[dataAtSquat].y) > 10 ){
+				else if( abs(abs(neck[dataAtStand].y - shoulder_r[dataAtStand].y) - abs(neck[dataAtSquat].y - shoulder_r[dataAtSquat].y)) > 5 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + "\n");
-					temp = "shoulders are not straight at the squat(squat position) in " + to_string(i + 1) + " squat, please keep your shoulders straight\n"; 
+					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					temp = "shoulders move too much in squat " + to_string(i + 1) + ", please keep your shoulders steady\n\n"; 
 					errorsstr.append(temp);
 				}
 			}
@@ -310,11 +332,11 @@ class SquatAnalyze{
 		*/
 		void output(){
 			cout << "=========================================" << endl;
-			cout << "NUMBER OF SQUATS PERFORMED "<< numberOfSquats << endl;
+			cout << "NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
 			if(error == 0)
 				cout << "No mistakes, well done" << endl;
 			else{
-				cout << "NUMBER OF MISTAKES "<< error << endl;
+				cout << "NUMBER OF MISTAKES "<< errorCount << endl;
 				cout << "=========================================" << endl;
 				cout << errorsstr;
 			}		
@@ -328,6 +350,8 @@ int main(int argc, char** argv) {
 	SquatAnalyze squat1;
 	squat1.read_data();
 	squat1.countNumberOfSquats();
+	squat1.countNumberOfStands();
+	squat1.countFullsquats();
 	squat1.frontError();
 	squat1.output();
 	return 0;
