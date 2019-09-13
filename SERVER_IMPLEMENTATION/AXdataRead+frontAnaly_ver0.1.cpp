@@ -9,6 +9,7 @@
 		1.KNEES AND FEETFRONT SHOULD BE HORIZONTAL AT SQUAT: LEFT KNEE POINT AND LEFT TOE POINT IS LIMITED TO 5PIXELS IN X AXIS AT SQUAT
 		2.ANGLE BETWEEN THIGH AND CALF SHOULD BE LESS THAN 90DEGREES: LEFT KNEE AND LEFT HIP ANGLE + LEFT KNEE AND LEFT FOOT ANGLE < 90 AT SQUAT
 		3.SHOULDER AND NECK SHOULD BE ON ONE POINT THROUGHOUT: LEFT SHOULDER POINT AND NECK POINT DIFFERENCE IS LIMITED TO 5PIXELS IN X AND Y AXES
+		4.FEET SHOULD STAY STATIONARY: LEFT FOOT POINT AND RIGHT FOOT POINT IS LIMITED TO 5PIXELS IN X AXIS 
 	FOR PLANK(RULE:CONSTRAINTS)
 		1.NECK TO HIP AND HIP TO HEEL SHOULD BE STRAIGHT: NECK AND LEFT HIP ANGLE - LEFT HIP AND LEFT FOOT ANGLE < 1 ON PLANK
 		2.ELBOW TO SHOULDER AND ELBOW TO HAND SHOULD BE PERPENDICULAR: LEFT ELBOW AND LEFT SHOULDER ANGLE - LEFT ELBOW AND LEFT HAND ANGLE == 90 DEGREES ON PLANK
@@ -59,6 +60,7 @@ Squat class is the main class of the program which reads data and analyzes the d
 */
 class SquatAnalyze{
 	public:
+		bool isPlank;
 		int numberOfSquats;
 		int numberOfStands;
 		int numberOfFull;
@@ -73,22 +75,22 @@ class SquatAnalyze{
 		bool error = 0;											/*1 if something is wrong*/
 		int errorCount = 0;										/*for keeping track of number of errors occured*/
 		Point feet_l[numberOfData],feet_r[numberOfData];		/*point11,14*/
-		Point hip_l[numberOfData],hip_r[numberOfData];			/*point9,12*/
+		Point hip_l[numberOfData],hip_r[numberOfData];			/*point12,9*/
 		Point knee_l[numberOfData],knee_r[numberOfData];		/*point10,13*/
 		Point shoulder_l[numberOfData],shoulder_r[numberOfData];/*point2,5*/
 		Point toe_l[numberOfData];								/*point22*/
 		Point neck[numberOfData];								/*point1*/
-		Point elbow_l[numberOfData];							/*point3*/
-		Point hand_l[numberOfData];								/*point4*/
+		Point elbow_l[numberOfData];							/*point6*/
+		Point hand_l[numberOfData];								/*point7*/
 		Point nose[numberOfData];								/*point0*/
-		Point ear_l[numberOfData];								/*point17*/
+		Point ear_l[numberOfData];								/*point18*/
 		/*
 		This Function reads the data in the output folder and saves them in appropriate variables (feet_l[],feet_r[],...etc)
 		*/
 		void read_data(){
 		    string s;
 		    for(int k = 0; k < numberOfData; k++){
-		    	int frame = timeInterval * k * frameRate;
+		    	int frame = 0.25 * k * 30;
 				stringstream ss;
 				ss << frame;
 				string framestr = ss.str();
@@ -98,29 +100,29 @@ class SquatAnalyze{
 		    	if(openfile.is_open()){
 		            getline(openfile, s);
 		            for (int i = 3; i < s.size(); i++) {
-		            	/*reads and saves point1 data*/
-		            	if((s[i]=='"' && (s[i-1]=='1') && (s[i-2]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								neck[k].data.push_back(s[j]);
-   							neck[k].distribute_data();
-						}
 		            	/*reads and saves point0 data*/
 		            	if((s[i]=='"' && (s[i-1]=='0') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								nose[k].data.push_back(s[j]);
    							nose[k].distribute_data();
 						}
-		            	/*reads and saves point3 data*/
-						if((s[i]=='"' && (s[i-1]=='3') && (s[i-2]=='"'))){
+		            	/*reads and saves point6 data*/
+		            	if((s[i]=='"' && (s[i-1]=='6') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								elbow_l[k].data.push_back(s[j]);
    							elbow_l[k].distribute_data();
 						}
-		            	/*reads and saves point4 data*/
-						if((s[i]=='"' && (s[i-1]=='4') && (s[i-2]=='"'))){
+		            	/*reads and saves point7 data*/
+		            	if((s[i]=='"' && (s[i-1]=='7') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								hand_l[k].data.push_back(s[j]);
    							hand_l[k].distribute_data();
+						}
+		            	/*reads and saves point1 data*/
+		            	if((s[i]=='"' && (s[i-1]=='1') && (s[i-2]=='"'))){
+   							for(int j = i + 3; s[j] != ']'; j++)
+   								neck[k].data.push_back(s[j]);
+   							neck[k].distribute_data();
 						}
 						/*reads and saves point22 data*/
 						if((s[i]=='"' && (s[i-1]=='2') && (s[i-2]=='2') && (s[i-3]=='"'))){
@@ -143,20 +145,14 @@ class SquatAnalyze{
 						/*reads and saves point9 data*/
    						if((s[i]=='"' && (s[i-1]=='9') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
-   								hip_l[k].data.push_back(s[j]);
-   							hip_l[k].distribute_data();
+   								hip_r[k].data.push_back(s[j]);
+   							hip_r[k].distribute_data();
 						}
 						/*reads and saves point11 data*/
 						if((s[i]=='"' && (s[i-1]=='1') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								feet_l[k].data.push_back(s[j]);
    							feet_l[k].distribute_data();
-						}
-						/*reads and saves point17 data*/
-						if((s[i]=='"' && (s[i-1]=='7') && (s[i-2]=='1') && (s[i-3]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								ear_l[k].data.push_back(s[j]);
-   							ear_l[k].distribute_data();
 						}
 						/*reads and saves point14 data*/
 						if((s[i]=='"' && (s[i-1]=='4') && (s[i-2]=='1') && (s[i-3]=='"'))){
@@ -167,14 +163,20 @@ class SquatAnalyze{
 						/*reads and saves point12 data*/
 						if((s[i]=='"' && (s[i-1]=='2') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
-   								hip_r[k].data.push_back(s[j]);
-   							hip_r[k].distribute_data();
+   								hip_l[k].data.push_back(s[j]);
+   							hip_l[k].distribute_data();
 						}
 						/*reads and saves point13 data*/
 						if((s[i]=='"' && (s[i-1]=='3') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								knee_r[k].data.push_back(s[j]);
    							knee_r[k].distribute_data();
+						}
+						/*reads and saves point18 data*/
+						if((s[i]=='"' && (s[i-1]=='8') && (s[i-2]=='1') && (s[i-3]=='"'))){
+   							for(int j = i + 3; s[j] != ']'; j++)
+   								ear_l[k].data.push_back(s[j]);
+   							ear_l[k].distribute_data();
 						}
 						/*reads and saves point10 data*/
 						if((s[i]=='"' && (s[i-1]=='0') && (s[i-2]=='1') && (s[i-3]=='"'))){
@@ -251,7 +253,7 @@ class SquatAnalyze{
 				/*
 				hip_l height and hip_r height difference at stand should be less than 5 as the constraint, else error is saved.
 				*/
-				if( abs(hip_l[dataAtStand].y - hip_r[dataAtStand].y) > 5 ){
+				if( abs(hip_r[dataAtStand].y - hip_l[dataAtStand].y) > 5 ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -261,7 +263,7 @@ class SquatAnalyze{
 				/*
 				hip_l height and hip_r height difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(hip_l[dataAtSquat].y - hip_r[dataAtSquat].y) > 5 ){
+				if( abs(hip_r[dataAtSquat].y - hip_l[dataAtSquat].y) > 5 ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -368,7 +370,7 @@ class SquatAnalyze{
 				*/ 
 				float spineAngle = atan(abs(hip_l[data].y - neck[data].y) / abs(hip_l[data].x - neck[data].x)) * 180 / PI;
 				float lowerAngle = atan(abs(feet_l[data].y - hip_l[data].y) / abs(feet_l[data].x - hip_l[data].x)) * 180 / PI;
-				if( (spineAngle - lowerAngle) > 1){
+				if( (spineAngle - lowerAngle) > 32){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*data) + "s\n");
@@ -377,8 +379,11 @@ class SquatAnalyze{
 				}
 				/*
 				angle difference of forearm and arm at plank should be around 90 degrees as the constraint, else error is saved.
-				*/ 
-				float armAngle = atan((elbow_l[data].y - shoulder_l[data].y) / (elbow_l[data].x - shoulder_l[data].x)) * 180 / PI;
+				*///ERROR dkasfgklasflkjasklfjklasjdklajkldjaslkdjklasjdkljasdkljaskldjklasjdkljaskljdklda
+				
+				
+				/*
+				float armAngle = atan((elbow_l[data].y - shoulder_l[data].y) / (shoulder_l[data].x - elbow_l[data].x)) * 180 / PI;
 				float forearmAngle = atan(abs(hand_l[data].y - elbow_l[data].y) / abs(hand_l[data].x - elbow_l[data].x)) * 180 / PI;
 				if( ((armAngle - forearmAngle) > 95) || ((spineAngle - lowerAngle) < 85) ){
 					error = 1;
@@ -386,10 +391,11 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*data) + "s\n");
 					temp = "Forearm and Arm are not perpendicular when performing the plank, try readjusting your arms.\n\n"; 
 					errorsstr.append(temp);
-				}
+				}*/
 				/*
 				angle of NOSE TO EAR should be around 90 degrees as the constraint, else error is saved.
 				*/ 
+				/*
 				float headAngle = atan((nose[data].y - ear_l[data].y) / (nose[data].x - ear_l[data].x)) * 180 / PI;
 				if( (headAngle < 85) || (headAngle < 95) ){
 					error = 1;
@@ -398,6 +404,7 @@ class SquatAnalyze{
 					temp = "Head are not vertical when performing the plank, try readjusting your head.\n\n"; 
 					errorsstr.append(temp);
 				}
+				*/
 			}
 		}
 		
@@ -406,15 +413,18 @@ class SquatAnalyze{
 		This Function displays the results of the analysis on the screen.
 		*/
 		void output(){
-			cout << "=========================================" << endl;
-			cout << "NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
+			ofstream result;
+			result.open("result.txt", ios::out);
+			result << "=========================================" << endl;
+			result << "NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
 			if(error == 0)
-				cout << "No mistakes, well done\n" << "=========================================" << endl;
+				result << "No mistakes, well done\n" << "=========================================" << endl;
 			else{
-				cout << "NUMBER OF MISTAKES "<< errorCount << endl;
-				cout << "=========================================" << endl;
-				cout << errorsstr;
-			}		
+				result << "NUMBER OF MISTAKES "<< errorCount << endl;
+				result << "=========================================" << endl;
+				result << errorsstr;
+			}
+			result.close();		
 		}
 };
 

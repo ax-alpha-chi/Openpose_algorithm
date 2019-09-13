@@ -39,7 +39,7 @@ void batch_file_receive(){
 void batch_file_process(){
 	ofstream batch_file;
 	batch_file.open("server.bat", ios::out);	
-	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --write_video processed.avi\n";
+	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --write_video processed.avi --part_candidates --write_json output/\n";
 	batch_file << openpose_cmd;
 	batch_file << "ffmpeg -i processed.avi processed.gif\n";
 	write_ftp_send();
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	cout << "Starting Up The Server...\n";
     write_ftp_receive();
     batch_file_receive();
-	while(!((is_file_exist("tobeprocessed.mp4")) || (is_file_exist("tobeprocessed.mp4")) || (is_file_exist("tobeprocessed.mp4"))))
+	while(!is_file_exist("tobeprocessed.mp4"))
     	system("server.bat");
     write_ftp_send();
     batch_file_process();
