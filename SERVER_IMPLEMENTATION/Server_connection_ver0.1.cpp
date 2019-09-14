@@ -12,6 +12,7 @@ void write_ftp_receive(){
     ftp_file << "ilona\n";
     ftp_file << "Nar340536!\n";
     ftp_file << "get tobeprocessed.mp4\n";
+    ftp_file << "get result.txt\n";
     ftp_file << "quit\n";
     ftp_file.close();
 }
@@ -23,6 +24,7 @@ void write_ftp_send(){
     ftp_file << "ilona\n";
     ftp_file << "Nar340536!\n";
     ftp_file << "send processed.gif\n";
+    ftp_file << "send processed2.gif\n";
     ftp_file << "send result.txt\n";
     ftp_file << "delete tobeprocessed.mp4\n";
     ftp_file << "quit\n";
@@ -33,6 +35,7 @@ void batch_file_receive(){
 	ofstream batch_file;
 	batch_file.open("server.bat", ios::out);
 	batch_file << "del /f tobeprocessed.mp4\n";
+	batch_file << "del /f result.txt\n";
 	batch_file << "ftp -s:ftp_receive.txt\n";
 	batch_file.close();
 }
@@ -42,13 +45,16 @@ void batch_file_process(){
 	batch_file.open("server.bat", ios::out);	
 	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --write_video processed.avi --part_candidates --write_json output/\n";
 	batch_file << openpose_cmd;
+	batch_file << "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --disable_blending --write_video processed2.avi\n";
 	batch_file << "ffmpeg -i processed.avi processed.gif\n";
+	batch_file << "ffmpeg -i processed2.avi processed2.gif\n";
 	batch_file << "AXdataRead+frontAnaly_ver0.1.exe";
 	write_ftp_send();
 	batch_file << "ftp -s:ftp_send.txt\n";
 	batch_file << "del -f tobeprocessed.mp4\n";
 	batch_file << "del -f processed.avi\n";
 	batch_file << "del -f processed.gif\n";
+	batch_file << "del -f processed2.gif\n";
 	batch_file.close();
 }
 

@@ -95,7 +95,7 @@ class SquatAnalyze{
 				ss << frame;
 				string framestr = ss.str();
 				string new_framestr = string(12 - framestr.length(), '0') + framestr;
-				string fileName = "output/sidesquat_" + new_framestr + "_keypoints.json"; /*specify json file name here*/
+				string fileName = "output/processed_" + new_framestr + "_keypoints.json"; /*specify json file name here*/
 		    	ifstream openfile(fileName.c_str());
 		    	if(openfile.is_open()){
 		            getline(openfile, s);
@@ -412,11 +412,11 @@ class SquatAnalyze{
 		/*
 		This Function displays the results of the analysis on the screen.
 		*/
-		void output(){
+		void output_side(){
 			ofstream result;
 			result.open("result.txt", ios::out);
 			result << "=========================================" << endl;
-			result << "NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
+			result << "Squat(side) is performed:NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
 			if(error == 0)
 				result << "No mistakes, well done\n" << "=========================================" << endl;
 			else{
@@ -426,18 +426,76 @@ class SquatAnalyze{
 			}
 			result.close();		
 		}
+		void output_front(){
+			ofstream result;
+			result.open("result.txt", ios::out);
+			result << "=========================================" << endl;
+			result << "Squat(front) is performed:NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
+			if(error == 0)
+				result << "No mistakes, well done\n" << "=========================================" << endl;
+			else{
+				result << "NUMBER OF MISTAKES "<< errorCount << endl;
+				result << "=========================================" << endl;
+				result << errorsstr;
+			}
+			result.close();		
+		}
+		void output_plank(){
+			ofstream result;
+			result.open("result.txt", ios::out);
+			result << "=========================================" << endl;
+			result << "Plank is performed"<< numberOfFull << endl;
+			result << "=========================================" << endl;
+			if(error == 0)
+				result << "No mistakes, well done\n" << "=========================================" << endl;
+			else{
+				result << "NUMBER OF MISTAKES "<< errorCount << endl;
+				result << "=========================================" << endl;
+				result << errorsstr;
+			}
+			result.close();	
+		}
 };
 
 int main(int argc, char** argv) {
 	/*
 	code to run the program.
 	*/
+	string line;
+	ifstream infile("result.txt");
+	while (getline(infile, line)){
+		if(line == "s"){
+			SquatAnalyze squat1;
+			squat1.read_data();
+			squat1.countNumberOfSquats();
+			squat1.countNumberOfStands();
+			squat1.countFullsquats();
+			squat1.sideError();
+			squat1.output_side();
+		}
+		if(line == "p"){
+			SquatAnalyze squat1;
+			squat1.read_data();
+			squat1.plankError();
+			squat1.output_plank();
+		}
+		if(line == "f"){
+			SquatAnalyze squat1;
+			squat1.read_data();
+			squat1.countNumberOfSquats();
+			squat1.countNumberOfStands();
+			squat1.countFullsquats();
+			squat1.frontError();
+			squat1.output_front();
+		}
+	}
+	/*
 	SquatAnalyze squat1;
 	squat1.read_data();
 	squat1.countNumberOfSquats();
 	squat1.countNumberOfStands();
 	squat1.countFullsquats();
 	squat1.sideError();
-	squat1.output();
+	squat1.output();*/
 	return 0;
 }
