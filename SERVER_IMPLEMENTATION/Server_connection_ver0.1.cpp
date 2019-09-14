@@ -23,6 +23,7 @@ void write_ftp_send(){
     ftp_file << "ilona\n";
     ftp_file << "Nar340536!\n";
     ftp_file << "send processed.gif\n";
+    ftp_file << "send result.txt\n";
     ftp_file << "delete tobeprocessed.mp4\n";
     ftp_file << "quit\n";
     ftp_file.close();
@@ -42,6 +43,7 @@ void batch_file_process(){
 	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --write_video processed.avi --part_candidates --write_json output/\n";
 	batch_file << openpose_cmd;
 	batch_file << "ffmpeg -i processed.avi processed.gif\n";
+	batch_file << "AXdataRead+frontAnaly_ver0.1.exe";
 	write_ftp_send();
 	batch_file << "ftp -s:ftp_send.txt\n";
 	batch_file << "del -f tobeprocessed.mp4\n";
