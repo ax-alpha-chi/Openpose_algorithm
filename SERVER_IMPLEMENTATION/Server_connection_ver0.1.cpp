@@ -43,12 +43,11 @@ void batch_file_receive(){
 void batch_file_process(){
 	ofstream batch_file;
 	batch_file.open("server.bat", ios::out);	
-	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --write_video processed.avi --part_candidates --write_json output/\n";
+	string openpose_cmd = "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --net_resolution \"512x288\" --write_video processed.avi --part_candidates --write_json output/\n";
 	batch_file << openpose_cmd;
-	batch_file << "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --disable_blending --write_video processed2.avi\n";
+	batch_file << "bin\\OpenPoseDemo.exe --video tobeprocessed.mp4 --net_resolution \"512x288\" --disable_blending --write_video processed2.avi\n";
 	batch_file << "ffmpeg -y -i processed.avi -pix_fmt rgb24 -r 20 -s 512x288 processed.gif\n";
 	batch_file << "ffmpeg -y -i processed2.avi -pix_fmt rgb24 -r 20 -s 512x288 processed2.gif\n";
-	batch_file << "ffmpeg -i processed2.avi processed2.gif\n";
 	batch_file << "AXdataRead+frontAnaly_ver0.1.exe\n";
 	write_ftp_send();
 	batch_file << "ftp -s:ftp_send.txt\n";
@@ -67,11 +66,12 @@ bool is_file_exist(const char *fileName){
 int main(int argc, char *argv[]){
 	
 	cout << "Starting Up The Server...\n";
-    write_ftp_receive();
-    batch_file_receive();
-	while(!is_file_exist("tobeprocessed.mp4"))
-    	system("server.bat");
-    write_ftp_send();
-    batch_file_process();
-    system("server.bat");
+		write_ftp_receive();
+	    batch_file_receive();
+		while(!is_file_exist("tobeprocessed.mp4"))
+	    	system("server.bat");
+	    write_ftp_send();
+	    batch_file_process();
+	    system("server.bat");
+    
 }

@@ -64,6 +64,9 @@ class SquatAnalyze{
 		int numberOfSquats;
 		int numberOfStands;
 		int numberOfFull;
+		const double sampleHeight = 450;						/*Height of the person in reference video (in pixels)*/
+		double heightOfPerson;									/*Height to be used to compare to the perfect squat sample video*/
+		double ratio;											/*Ratio of height of sample to height of person*/
 		int squatDataNumber[10];								/*datanumber at which the squat is performed first squat at squatDatabNumber[0], second squat at squatDatanumber[1], and so on*/
 		int standDataNumber[10];								/*datanumber at the person is standing straight, same as squatDataNumeber*/
 		string errorsstr;										/*errorstring which will save errors when they are found*/
@@ -79,6 +82,7 @@ class SquatAnalyze{
 		Point knee_l[numberOfData],knee_r[numberOfData];		/*point10,13*/
 		Point shoulder_l[numberOfData],shoulder_r[numberOfData];/*point2,5*/
 		Point toe_l[numberOfData];								/*point22*/
+		Point toe_r[numberOfData];								/*point19*/
 		Point neck[numberOfData];								/*point1*/
 		Point elbow_l[numberOfData];							/*point6*/
 		Point hand_l[numberOfData];								/*point7*/
@@ -95,7 +99,7 @@ class SquatAnalyze{
 				ss << frame;
 				string framestr = ss.str();
 				string new_framestr = string(12 - framestr.length(), '0') + framestr;
-				string fileName = "output/processed_" + new_framestr + "_keypoints.json"; /*specify json file name here*/
+				string fileName = "output/tobeprocessed_" + new_framestr + "_keypoints.json"; /*specify json file name here*/
 		    	ifstream openfile(fileName.c_str());
 		    	if(openfile.is_open()){
 		            getline(openfile, s);
@@ -160,6 +164,12 @@ class SquatAnalyze{
    								feet_r[k].data.push_back(s[j]);
    							feet_r[k].distribute_data();
 						}
+						/*reads and saves point19 data*/
+						if((s[i]=='"' && (s[i-1]=='4') && (s[i-2]=='1') && (s[i-3]=='"'))){
+   							for(int j = i + 3; s[j] != ']'; j++)
+   								toe_r[k].data.push_back(s[j]);
+   							toe_r[k].distribute_data();
+						}
 						/*reads and saves point12 data*/
 						if((s[i]=='"' && (s[i-1]=='2') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
@@ -185,7 +195,9 @@ class SquatAnalyze{
    							knee_l[k].distribute_data();
 						}	
 					}
-		    	}		
+		    	}
+			heightOfPerson = 	feet_l[1].y - neck[1].y;
+			ratio = sampleHeight/heightOfPerson;
 			}
 		}
 		/*
@@ -194,7 +206,7 @@ class SquatAnalyze{
 		void countNumberOfSquats(){
 			int count = 0;
 			for(int i = 1; i < numberOfData; i++){
-				if( abs( hip_l[i].y - knee_l[i].y) < 25 ){
+				if( abs( hip_l[i].y - knee_l[i].y) < 25/ratio ){
 					squatDataNumber[count] = i;
 					count++;
 					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
@@ -208,7 +220,7 @@ class SquatAnalyze{
 		void countNumberOfStands(){
 			int count = 0;
 			for(int i = 1; i < numberOfData; i++){
-				if( abs( hip_l[i].y - knee_l[i].y) > 140 ){
+				if( abs( hip_l[i].y - knee_l[i].y) > 120/ratio ){
 					standDataNumber[count] = i;
 					count++;
 					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
@@ -243,7 +255,8 @@ class SquatAnalyze{
 				/*
 				feet width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/	
-				if( abs(abs(feet_r[dataAtStand].x - feet_l[dataAtStand].x) - abs(feet_r[dataAtSquat].x - feet_l[dataAtSquat].x)) > 5 ){
+
+				if( abs(abs(abs(toe_r[dataAtStand].x - toe_l[dataAtStand].x) - abs(toe_r[dataAtSquat].x - toe_l[dataAtSquat].x))) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -253,7 +266,7 @@ class SquatAnalyze{
 				/*
 				hip_l height and hip_r height difference at stand should be less than 5 as the constraint, else error is saved.
 				*/
-				if( abs(hip_r[dataAtStand].y - hip_l[dataAtStand].y) > 5 ){
+				if( abs(hip_r[dataAtStand].y - hip_l[dataAtStand].y) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -263,7 +276,7 @@ class SquatAnalyze{
 				/*
 				hip_l height and hip_r height difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(hip_r[dataAtSquat].y - hip_l[dataAtSquat].y) > 5 ){
+				if( abs(hip_r[dataAtSquat].y - hip_l[dataAtSquat].y) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -283,7 +296,7 @@ class SquatAnalyze{
 				/*
 				shoulder_l height and shoulder_r height difference at stand should be less than 5 as the constraint, else error is saved.
 				*/
-				if( abs(shoulder_l[dataAtStand].y - shoulder_r[dataAtStand].y) > 10 ){
+				if( abs(shoulder_l[dataAtStand].y - shoulder_r[dataAtStand].y) > 10/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtStand) + "s\n");
@@ -293,7 +306,7 @@ class SquatAnalyze{
 				/*
 				shouler_l height and shoulder_r height difference at squat should be less than 5 as the constraint, else error is saved.
 				*/
-				if( abs(shoulder_l[dataAtSquat].y - shoulder_r[dataAtSquat].y) > 10 ){
+				if( abs(shoulder_l[dataAtSquat].y - shoulder_r[dataAtSquat].y) > 10/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -319,7 +332,7 @@ class SquatAnalyze{
 				/*
 				knee_l and toe_l x difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(knee_l[dataAtSquat].x - toe_l[dataAtSquat].x) > 5 ){
+				if( abs(knee_l[dataAtSquat].x - toe_l[dataAtSquat].x) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -341,14 +354,14 @@ class SquatAnalyze{
 				/*
 				shoulder and neck width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(abs(neck[dataAtStand].x - shoulder_r[dataAtStand].x) - abs(neck[dataAtSquat].x - shoulder_r[dataAtSquat].x)) > 5 ){
+				if( abs(abs(neck[dataAtStand].x - shoulder_r[dataAtStand].x) - abs(neck[dataAtSquat].x - shoulder_r[dataAtSquat].x)) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "shoulders move too much in squat " + to_string(i + 1) + ", please keep your shoulders steady.\n\n"; 
 					errorsstr.append(temp);
 				}
-				else if( abs(abs(neck[dataAtStand].y - shoulder_r[dataAtStand].y) - abs(neck[dataAtSquat].y - shoulder_r[dataAtSquat].y)) > 5 ){
+				else if( abs(abs(neck[dataAtStand].y - shoulder_r[dataAtStand].y) - abs(neck[dataAtSquat].y - shoulder_r[dataAtSquat].y)) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -416,7 +429,7 @@ class SquatAnalyze{
 			ofstream result;
 			result.open("result.txt", ios::out);
 			result << "=========================================" << endl;
-			result << "Squat(side) is performed:NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
+			result << "Squat(side) is performed:SQUATS PERFORMED "<< numberOfFull << endl;
 			if(error == 0)
 				result << "No mistakes, well done\n" << "=========================================" << endl;
 			else{
@@ -430,7 +443,7 @@ class SquatAnalyze{
 			ofstream result;
 			result.open("result.txt", ios::out);
 			result << "=========================================" << endl;
-			result << "Squat(front) is performed:NUMBER OF FULL SQUATS PERFORMED "<< numberOfFull << endl;
+			result << "Squat(front) is performed:SQUATS PERFORMED "<< numberOfFull << endl;
 			if(error == 0)
 				result << "No mistakes, well done\n" << "=========================================" << endl;
 			else{
@@ -444,7 +457,7 @@ class SquatAnalyze{
 			ofstream result;
 			result.open("result.txt", ios::out);
 			result << "=========================================" << endl;
-			result << "Plank is performed"<< numberOfFull << endl;
+			result << "Plank is performed"<< endl;
 			result << "=========================================" << endl;
 			if(error == 0)
 				result << "No mistakes, well done\n" << "=========================================" << endl;
@@ -462,6 +475,7 @@ int main(int argc, char** argv) {
 	code to run the program.
 	*/
 	string line;
+	
 	ifstream infile("result.txt");
 	while (getline(infile, line)){
 		if(line == "s"){
@@ -489,13 +503,5 @@ int main(int argc, char** argv) {
 			squat1.output_front();
 		}
 	}
-	/*
-	SquatAnalyze squat1;
-	squat1.read_data();
-	squat1.countNumberOfSquats();
-	squat1.countNumberOfStands();
-	squat1.countFullsquats();
-	squat1.sideError();
-	squat1.output();*/
 	return 0;
 }
