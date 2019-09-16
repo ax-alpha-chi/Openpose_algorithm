@@ -255,8 +255,8 @@ class SquatAnalyze{
 				/*
 				feet width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/	
-
 				if( abs(abs(abs(toe_r[dataAtStand].x - toe_l[dataAtStand].x) - abs(toe_r[dataAtSquat].x - toe_l[dataAtSquat].x))) > 5/ratio ){
+					
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -503,5 +503,6 @@ int main(int argc, char** argv) {
 			squat1.output_front();
 		}
 	}
+
 	return 0;
 }
