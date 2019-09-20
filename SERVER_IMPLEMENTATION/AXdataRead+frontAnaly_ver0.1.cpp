@@ -15,7 +15,7 @@
 		2.ELBOW TO SHOULDER AND ELBOW TO HAND SHOULD BE PERPENDICULAR: LEFT ELBOW AND LEFT SHOULDER ANGLE - LEFT ELBOW AND LEFT HAND ANGLE == 90 DEGREES ON PLANK
 		3.NOSE TO EAR SHOULD BE VERTICLE: ANGLE OF NOSE TO EAR == 90 DEGREES ON PLANK
 */
-
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -61,6 +61,8 @@ Squat class is the main class of the program which reads data and analyzes the d
 class SquatAnalyze{
 	public:
 		bool isPlank;
+		string input;
+		string output;
 		int numberOfSquats;
 		int numberOfStands;
 		int numberOfFull;
@@ -81,12 +83,11 @@ class SquatAnalyze{
 		Point hip_l[numberOfData],hip_r[numberOfData];			/*point12,9*/
 		Point knee_l[numberOfData],knee_r[numberOfData];		/*point10,13*/
 		Point shoulder_l[numberOfData],shoulder_r[numberOfData];/*point2,5*/
-		Point toe_l[numberOfData];								/*point22*/
-		Point toe_r[numberOfData];								/*point19*/
 		Point neck[numberOfData];								/*point1*/
 		Point elbow_l[numberOfData];							/*point6*/
 		Point hand_l[numberOfData];								/*point7*/
 		Point nose[numberOfData];								/*point0*/
+		Point toe_l[numberOfData];								/*point22*/
 		Point ear_l[numberOfData];								/*point18*/
 		/*
 		This Function reads the data in the output folder and saves them in appropriate variables (feet_l[],feet_r[],...etc)
@@ -104,29 +105,17 @@ class SquatAnalyze{
 		    	if(openfile.is_open()){
 		            getline(openfile, s);
 		            for (int i = 3; i < s.size(); i++) {
-		            	/*reads and saves point0 data*/
-		            	if((s[i]=='"' && (s[i-1]=='0') && (s[i-2]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								nose[k].data.push_back(s[j]);
-   							nose[k].distribute_data();
-						}
-		            	/*reads and saves point6 data*/
-		            	if((s[i]=='"' && (s[i-1]=='6') && (s[i-2]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								elbow_l[k].data.push_back(s[j]);
-   							elbow_l[k].distribute_data();
-						}
-		            	/*reads and saves point7 data*/
-		            	if((s[i]=='"' && (s[i-1]=='7') && (s[i-2]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								hand_l[k].data.push_back(s[j]);
-   							hand_l[k].distribute_data();
-						}
 		            	/*reads and saves point1 data*/
 		            	if((s[i]=='"' && (s[i-1]=='1') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								neck[k].data.push_back(s[j]);
    							neck[k].distribute_data();
+						}
+						/*reads and saves point0 data*/
+		            	if((s[i]=='"' && (s[i-1]=='0') && (s[i-2]=='"'))){
+   							for(int j = i + 3; s[j] != ']'; j++)
+   								nose[k].data.push_back(s[j]);
+   							nose[k].distribute_data();
 						}
 						/*reads and saves point22 data*/
 						if((s[i]=='"' && (s[i-1]=='2') && (s[i-2]=='2') && (s[i-3]=='"'))){
@@ -149,8 +138,8 @@ class SquatAnalyze{
 						/*reads and saves point9 data*/
    						if((s[i]=='"' && (s[i-1]=='9') && (s[i-2]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
-   								hip_r[k].data.push_back(s[j]);
-   							hip_r[k].distribute_data();
+   								hip_l[k].data.push_back(s[j]);
+   							hip_l[k].distribute_data();
 						}
 						/*reads and saves point11 data*/
 						if((s[i]=='"' && (s[i-1]=='1') && (s[i-2]=='1') && (s[i-3]=='"'))){
@@ -164,29 +153,17 @@ class SquatAnalyze{
    								feet_r[k].data.push_back(s[j]);
    							feet_r[k].distribute_data();
 						}
-						/*reads and saves point19 data*/
-						if((s[i]=='"' && (s[i-1]=='4') && (s[i-2]=='1') && (s[i-3]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								toe_r[k].data.push_back(s[j]);
-   							toe_r[k].distribute_data();
-						}
 						/*reads and saves point12 data*/
 						if((s[i]=='"' && (s[i-1]=='2') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
-   								hip_l[k].data.push_back(s[j]);
-   							hip_l[k].distribute_data();
+   								hip_r[k].data.push_back(s[j]);
+   							hip_r[k].distribute_data();
 						}
 						/*reads and saves point13 data*/
 						if((s[i]=='"' && (s[i-1]=='3') && (s[i-2]=='1') && (s[i-3]=='"'))){
    							for(int j = i + 3; s[j] != ']'; j++)
    								knee_r[k].data.push_back(s[j]);
    							knee_r[k].distribute_data();
-						}
-						/*reads and saves point18 data*/
-						if((s[i]=='"' && (s[i-1]=='8') && (s[i-2]=='1') && (s[i-3]=='"'))){
-   							for(int j = i + 3; s[j] != ']'; j++)
-   								ear_l[k].data.push_back(s[j]);
-   							ear_l[k].distribute_data();
 						}
 						/*reads and saves point10 data*/
 						if((s[i]=='"' && (s[i-1]=='0') && (s[i-2]=='1') && (s[i-3]=='"'))){
@@ -204,29 +181,33 @@ class SquatAnalyze{
 		This Function counts the number of squats performed, it counts as a squat when hip and knee points come close (within 25mm)
 		*/
 		void countNumberOfSquats(){
+			
 			int count = 0;
 			for(int i = 1; i < numberOfData; i++){
-				if( abs( hip_l[i].y - knee_l[i].y) < 25/ratio ){
+				if( abs( hip_l[i].y - knee_l[i].y) < 100/ratio ){
 					squatDataNumber[count] = i;
 					count++;
 					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
 				} 
 			}
 			numberOfSquats = count; 
+			cout << numberOfSquats << endl;
 		}
 		/*
 		This Function counts the number of time person is standing straight
 		*/
 		void countNumberOfStands(){
 			int count = 0;
+			
 			for(int i = 1; i < numberOfData; i++){
-				if( abs( hip_l[i].y - knee_l[i].y) > 120/ratio ){
+				if( abs( hip_l[i].y - knee_l[i].y) > 150/ratio ){
 					standDataNumber[count] = i;
 					count++;
 					i = i + delay;		/*checks for the squat again after 2.5 seconds (0.25*10)*/
-				} 
+				}
 			}
 			numberOfStands = count; 
+			cout << "stands" <<numberOfStands << endl;
 		}
 		/*
 		This Function counts the full squats
@@ -236,13 +217,27 @@ class SquatAnalyze{
 				numberOfFull = numberOfStands;
 			else
 				numberOfFull = numberOfSquats;
-			
+			for(int i = 0; i < numberOfFull; i++ ){
+				int tempi = standDataNumber[i]*frameRate*timeInterval;
+				string temp2 = to_string(tempi);
+				string temp = string(4 - temp2.length(), '0') + temp2;
+				string str = "frame" + temp + ".jpg";
+				string str2 = "stand" + to_string(i) + ".jpg";
+				rename(str.c_str(), str2.c_str());
+				tempi = squatDataNumber[i]*frameRate*timeInterval;
+				temp2 = to_string(tempi);
+				temp = string(4 - temp2.length(), '0') + temp2;
+				str = "frame" + temp + ".jpg";
+				str2 = "squat" + to_string(i) + ".jpg";
+				rename(str.c_str(), str2.c_str());
+			}
 		}
 		/*
 		This Function analyzes the data obtained and finds errors according to the constraints of perfect squat.(front view)
 		*/
 		void frontError(){
 			string temp;
+			ofstream batch_file;
 			int dataAtSquat;						/*dataAtSquat is the datanumber at which the squat is performed*/
 			int dataAtStand;						/*dataAtStand is the datanumber at which the person is standing straight*/
 			/*
@@ -255,13 +250,18 @@ class SquatAnalyze{
 				/*
 				feet width difference between stand and squat should be less than 5 as the constraint, else error is saved.
 				*/	
-				if( abs(abs(abs(toe_r[dataAtStand].x - toe_l[dataAtStand].x) - abs(toe_r[dataAtSquat].x - toe_l[dataAtSquat].x))) > 5/ratio ){
-					
+				if( abs(abs(abs(feet_r[dataAtStand].x - feet_l[dataAtStand].x) - abs(feet_r[dataAtSquat].x - feet_l[dataAtSquat].x))) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "feets are moved too much in squat " + to_string(i + 1) + ", please keep your feet stationary (same position).\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+540+810 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 				/*
 				hip_l height and hip_r height difference at stand should be less than 5 as the constraint, else error is saved.
@@ -272,6 +272,12 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "hips are not horizontal at the start of squat(stand position) in squat " + to_string(i + 1) + ", please keep your hips straight.\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+540+810 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 				/*
 				hip_l height and hip_r height difference at squat should be less than 5 as the constraint, else error is saved.
@@ -282,6 +288,12 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "hips are not horizontal at the squat(squat position) in squat " + to_string(i + 1) + ", please keep your hips straight.\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+640+650 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 				/*
 				knee width difference between stand and squat should be less than 5 as the constraint, else error is saved.
@@ -292,6 +304,12 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "knees move too much in squat " + to_string(i + 1) + ", please keep your knees around the same position.\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+640+650 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 				/*
 				shoulder_l height and shoulder_r height difference at stand should be less than 5 as the constraint, else error is saved.
@@ -302,6 +320,12 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtStand) + "s\n");
 					temp = "shoulders are not straight at the start of squat(stand position) in " + to_string(i + 1) + " squat, please keep your shoulders straight.\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+640+100 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 				/*
 				shouler_l height and shoulder_r height difference at squat should be less than 5 as the constraint, else error is saved.
@@ -312,6 +336,12 @@ class SquatAnalyze{
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "shoulders are not straight at the squat(squat position) in " + to_string(i + 1) + " squat, please keep your shoulders straight.\n\n"; 
 					errorsstr.append(temp);
+					batch_file.open("error.bat", ios::out);
+					string input = "squat" + to_string(i) + ".jpg";
+					string output = "error" + to_string(errorCount) + ".jpg";
+					batch_file << "C:\\\"Program Files\"\\ImageMagick-7.0.8-Q16\\convert.exe " + input  + " -crop 500x290+640+400 " + output +" \n";
+					batch_file.close();
+					system("error.bat");
 				}
 			}
 		}
@@ -332,7 +362,7 @@ class SquatAnalyze{
 				/*
 				knee_l and toe_l x difference at squat should be less than 5 as the constraint, else error is saved.
 				*/ 
-				if( abs(knee_l[dataAtSquat].x - toe_l[dataAtSquat].x) > 5/ratio ){
+				if( abs(knee_l[dataAtSquat].x - feet_l[dataAtSquat].x) > 5/ratio ){
 					error = 1;
 					errorCount++;
 					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
@@ -439,7 +469,7 @@ class SquatAnalyze{
 			}
 			result.close();		
 		}
-		void output_front(){
+		void output_front(){			
 			ofstream result;
 			result.open("result.txt", ios::out);
 			result << "=========================================" << endl;
@@ -468,6 +498,11 @@ class SquatAnalyze{
 			}
 			result.close();	
 		}
+		void output_data(){
+			for(int i = 1; i < numberOfData; i++){
+				cout << "abs( hip_l[i].y - knee_l[i].y) : " << abs( hip_l[i].y - knee_l[i].y) << endl;
+			}
+		}
 };
 
 int main(int argc, char** argv) {
@@ -477,7 +512,7 @@ int main(int argc, char** argv) {
 	string line;
 	
 	ifstream infile("result.txt");
-	while (getline(infile, line)){
+	/*while (getline(infile, line)){
 		if(line == "s"){
 			SquatAnalyze squat1;
 			squat1.read_data();
@@ -501,8 +536,16 @@ int main(int argc, char** argv) {
 			squat1.countFullsquats();
 			squat1.frontError();
 			squat1.output_front();
+			squat1.output_data();
 		}
-	}
-
+	}*/
+	SquatAnalyze squat1;
+			squat1.read_data();
+			squat1.countNumberOfSquats();
+			squat1.countNumberOfStands();
+			squat1.countFullsquats();
+			squat1.frontError();
+			squat1.output_front();
+			squat1.output_data();
 	return 0;
 }
