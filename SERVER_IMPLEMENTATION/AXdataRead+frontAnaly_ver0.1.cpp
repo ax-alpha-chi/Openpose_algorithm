@@ -253,7 +253,7 @@ class SquatAnalyze{
 				if( abs(abs(abs(feet_r[dataAtStand].x - feet_l[dataAtStand].x) - abs(feet_r[dataAtSquat].x - feet_l[dataAtSquat].x))) > 5/ratio ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					errorsstr.append( to_string(errorCount)  + "F\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "feets are moved too much in squat " + to_string(i + 1) + ", please keep your feet stationary (same position).\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -269,7 +269,7 @@ class SquatAnalyze{
 				if( abs(hip_r[dataAtStand].y - hip_l[dataAtStand].y) > 5/ratio ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					errorsstr.append(to_string(errorCount)  + "HU\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "hips are not horizontal at the start of squat(stand position) in squat " + to_string(i + 1) + ", please keep your hips straight.\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -285,7 +285,7 @@ class SquatAnalyze{
 				if( abs(hip_r[dataAtSquat].y - hip_l[dataAtSquat].y) > 5/ratio ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					errorsstr.append(to_string(errorCount)  + "HD\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "hips are not horizontal at the squat(squat position) in squat " + to_string(i + 1) + ", please keep your hips straight.\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -301,7 +301,7 @@ class SquatAnalyze{
 				if( abs(abs(knee_l[dataAtStand].x - knee_r[dataAtStand].x) - abs(knee_l[dataAtSquat].x - knee_r[dataAtSquat].x)) > 60 ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					errorsstr.append(to_string(errorCount)  + "K\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "knees move too much in squat " + to_string(i + 1) + ", please keep your knees around the same position.\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -317,7 +317,7 @@ class SquatAnalyze{
 				if( abs(shoulder_l[dataAtStand].y - shoulder_r[dataAtStand].y) > 10/ratio ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtStand) + "s\n");
+					errorsstr.append(to_string(errorCount)  + "SU\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtStand) + "s\n");
 					temp = "shoulders are not straight at the start of squat(stand position) in " + to_string(i + 1) + " squat, please keep your shoulders straight.\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -333,7 +333,7 @@ class SquatAnalyze{
 				if( abs(shoulder_l[dataAtSquat].y - shoulder_r[dataAtSquat].y) > 10/ratio ){
 					error = 1;
 					errorCount++;
-					errorsstr.append("Mistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
+					errorsstr.append(to_string(errorCount)  + "SD\nMistake " + to_string(errorCount) + " at time " + to_string(timeInterval*dataAtSquat) + "s\n");
 					temp = "shoulders are not straight at the squat(squat position) in " + to_string(i + 1) + " squat, please keep your shoulders straight.\n\n"; 
 					errorsstr.append(temp);
 					batch_file.open("error.bat", ios::out);
@@ -467,6 +467,33 @@ class SquatAnalyze{
 				result << "=========================================" << endl;
 				result << errorsstr;
 			}
+			result << "data" << endl;
+			result << "type:side" << endl;
+			result << "Number of squats:" << numberOfFull << endl;
+			result <<  endl;
+			
+			result << "time at first stand: " << standDataNumber[0]*timeInterval << "s" << endl;
+			result << "time at first squat: " << squatDataNumber[0]*timeInterval << "s" << endl;
+			result << "time taken for the first squat: " << (standDataNumber[1]*timeInterval - standDataNumber[0]*timeInterval) << "s" << endl;
+			result <<  endl;
+			
+			result << "time at second stand: " << standDataNumber[1]*timeInterval << "s" << endl;
+			result << "time at second squat: " << squatDataNumber[1]*timeInterval << "s" << endl;
+			result << "time taken for the second squat: " << (standDataNumber[2]*timeInterval - standDataNumber[1]*timeInterval) << "s" << endl;
+			result << endl;
+			
+			result << "time at third stand: " << standDataNumber[2]*timeInterval << "s" << endl;
+			result << "time at thrid squat: " << squatDataNumber[2]*timeInterval << "s" << endl;
+			result << "time taken for the third squat: " << (standDataNumber[3]*timeInterval - standDataNumber[2]*timeInterval) << "s" << endl;
+			result <<  endl;
+			
+			result << "height of person in pixels: " << heightOfPerson << endl;
+			result << "ratio to sample video: " << ratio << endl;
+			result << "number of data points analyzed: " << numberOfData << endl;
+			result << "video frameRate: " << frameRate << endl;
+			result << "time interval of data archiving: " << timeInterval << endl;
+			result << "delay of rechecking for squat: " << delay << endl; 
+
 			result.close();		
 		}
 		void output_front(){			
@@ -481,7 +508,39 @@ class SquatAnalyze{
 				result << "=========================================" << endl;
 				result << errorsstr;
 			}
-			result.close();		
+			result << "data" << endl;
+			result << "type:front" << endl;
+			result << "Number of squats:" << numberOfFull << endl;
+			result <<  endl;
+			
+			result << "time at first stand: " << standDataNumber[0]*timeInterval << "s" << endl;
+			result << "time at first squat: " << squatDataNumber[0]*timeInterval << "s" << endl;
+			result << "time taken for the first squat: " << (standDataNumber[1]*timeInterval - standDataNumber[0]*timeInterval) << "s" << endl;
+			result <<  endl;
+			
+			result << "time at second stand: " << standDataNumber[1]*timeInterval << "s" << endl;
+			result << "time at second squat: " << squatDataNumber[1]*timeInterval << "s" << endl;
+			result << "time taken for the second squat: " << (standDataNumber[2]*timeInterval - standDataNumber[1]*timeInterval) << "s" << endl;
+			result << endl;
+			
+			result << "time at third stand: " << standDataNumber[2]*timeInterval << "s" << endl;
+			result << "time at thrid squat: " << squatDataNumber[2]*timeInterval << "s" << endl;
+			result << "time taken for the third squat: " << (standDataNumber[3]*timeInterval - standDataNumber[2]*timeInterval) << "s" << endl;
+			result <<  endl;
+			
+			result << "height of person in pixels: " << heightOfPerson << endl;
+			result << "ratio to sample video: " << ratio << endl;
+			result << "number of data points analyzed: " << numberOfData << endl;
+			result << "video frameRate: " << frameRate << endl;
+			result << "time interval of data archiving: " << timeInterval << endl;
+			result << "delay of rechecking for squat: " << delay << endl;
+			result <<  endl;
+			
+			for(int i = 1; i < numberOfData; i++){
+				result << "data.height[" << i << "]: " << abs( hip_l[i].y - knee_l[i].y) << endl;
+			}
+			result.close();	
+
 		}
 		void output_plank(){
 			ofstream result;
