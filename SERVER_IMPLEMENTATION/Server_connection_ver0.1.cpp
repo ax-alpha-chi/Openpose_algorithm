@@ -75,7 +75,7 @@ void batch_file_process(){
 	write_ftp_send();
 	batch_file << "ftp -s:ftp_send.txt\n";
 	batch_file << "del -f tobeprocessed.mp4\n";
-	batch_file << "del -f processed.avi\n";
+	//batch_file << "del -f processed.avi\n";
 	batch_file << "del -f processed2.avi\n";
 	batch_file << "del -f processed.gif\n";
 	batch_file << "del -f processed2.gif\n";
